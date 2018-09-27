@@ -23,7 +23,10 @@
         <tr>
 
 
-          <td>{{ group.group_id }}</td>
+            <td><a href="{% url 'module_list' faculty.faculty_id %}">{{ group.group_id }}</a></td>
+          <td>{{ group.semester }}</td>
+          <td>{{ group.year }}</td>
+
 
 
       </tr>
