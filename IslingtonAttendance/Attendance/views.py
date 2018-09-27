@@ -22,3 +22,7 @@ def group_list(request,faculty_group):
 
     return render(request, 'group.html', {'groups':group})
 
+def student_list(request,student_group):
+    students=Student.objects.filter(group=student_group)
+
+    return render(request,'student_record.html',{'student':students})
