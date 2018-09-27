@@ -62,8 +62,8 @@ class Group(models.Model):
 
 class Routine(models.Model):
     routine_id=models.AutoField(primary_key=True)
-    startTime=models.DateTimeField(max_length=6)
-    endTime=models.DateTimeField(max_length=6)
+    startTime=models.TimeField(max_length=6)
+    endTime=models.TimeField(max_length=6)
     day_of_the_week = models.CharField(max_length=9)
     class_type = models.CharField(max_length=15)
     module = models.ForeignKey("Module",on_delete=models.CASCADE)
@@ -118,9 +118,9 @@ class Student(models.Model):
     permanent_address = models.CharField(max_length=95)
     photo = models.CharField(max_length=255, null=True)
     enroll_no=models.ForeignKey("Fingerprints",on_delete=models.CASCADE)
-    qr_code=models.CharField(max_length=255)
-    nfc=models.CharField(max_length=255)
-    barcode=models.CharField(max_length=255)
+    qr_code=models.CharField(max_length=255,blank=True,default="")
+    nfc=models.CharField(max_length=255,blank=True,default="")
+    barcode=models.CharField(max_length=255,blank=True,default="")
 
     def __str__(self):
         return self.student_id + ", " + self.student_first_name+ ", " +self.student_last_name
@@ -137,7 +137,7 @@ class Attendance_detail(models.Model):
     attendance_detail_id = models.BigAutoField(primary_key=True)
     attendance = models.ForeignKey(Attendance, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    entry_time=models.DateTimeField(max_length=6)
+    entry_time=models.TimeField(max_length=6)
     status=models.CharField(max_length=2)
 
 
@@ -172,3 +172,4 @@ class Results(models.Model):
 
 
 
+        
