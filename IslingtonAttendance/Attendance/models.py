@@ -9,14 +9,14 @@ class Teacher(models.Model):
     firstname = models.CharField(max_length=50, default="")
     lastname = models.CharField(max_length=50, default="")
     type = models.CharField(max_length=10,choices=teacher_type_choices, default="")
-    username = models.OneToOneField(User, on_delete=models.CASCADE)
+    username = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.firstname+" "+self.lastname
 
 class Module(models.Model):
     title = models.CharField(max_length=100, primary_key=True)
-    module_code = models.CharField(max_length=10)
+    module_code = models.CharField(max_length=10, null=True, blank=True)
     period = models.CharField(max_length=5, blank=True)
     level = models.CharField(max_length=25)
     credit = models.IntegerField()
@@ -100,12 +100,12 @@ class Attendance(models.Model):
         return str(self.classroom)+", "+str(self.routine)
 
 class Attendance_detail(models.Model):
-    #attendance_detail_id = models.BigAutoField(primary_key=True)
+    id = models.BigAutoField(primary_key=True)
     attendance = models.ForeignKey("Attendance", on_delete=models.CASCADE)
-    enroll_no = models.ForeignKey("Student_Enrollment",null=True, to_field="enroll_no", on_delete=models.CASCADE)
-    entry_datetime=models.DateTimeField(null=True)
+    enroll_no = models.ForeignKey("Student_Enrollment", null=True, blank=True, to_field="enroll_no", on_delete=models.CASCADE)
+    entry_datetime=models.DateTimeField(null=True, blank=True)
     #status=models.CharField(max_length=2,blank=True)
-    device_id=models.ForeignKey("Device", null=True, on_delete=models.CASCADE)
+    device_id=models.ForeignKey("Device", null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.student)+" ,"+str(self.attendance)
