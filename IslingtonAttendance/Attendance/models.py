@@ -1,45 +1,44 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 
 class Teacher(models.Model):
+    teacher_type_choices = (('Lecturer','Lecturer'),('Tutor','Tutor'))
     teacher_id = models.AutoField(primary_key=True, max_length=10)
     firstname = models.CharField(max_length=50, default="")
     lastname = models.CharField(max_length=50, default="")
-    type = models.IntegerField()
-
-
-    def __str__(self):
-        return self.teacher_id
-
-class Users(models.Model):
-    users_id = models.CharField(max_length=15, primary_key=True)
-    username = models.CharField(max_length=50)
-    password = models.CharField(max_length=50)
-    teacher = models.ForeignKey("Teacher", on_delete=models.CASCADE)
+    type = models.CharField(max_length=10,choices=teacher_type_choices, default="")
+    username = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.users_id+", "+self.username
-
+        return self.firstname+" "+self.lastname
 
 class Module(models.Model):
-    module_id = models.CharField(max_length=10, primary_key=True)
-    title = models.CharField(max_length=75)
-    period = models.CharField(max_length=5)
+    title = models.CharField(max_length=100, primary_key=True)
+    module_code = models.CharField(max_length=10, null=True, blank=True)
+    period = models.CharField(max_length=5, blank=True)
     level = models.CharField(max_length=25)
     credit = models.IntegerField()
 
     def __str__(self):
-        return self.module_id
+        return self.title
 
 class Teacher_Module(models.Model):
+    class_type_choices = (("Lecture","Lecture"),("Tutorial","Tutorial"),("Lab","Lab"),("Tutorial and Lab","Tutorial and Lab"))
     module = models.ForeignKey("Module", on_delete=models.CASCADE)
     teacher = models.ForeignKey("Teacher", on_delete=models.CASCADE)
+    class_type = models.CharField(max_length=20,choices=class_type_choices, default="")
 
+    def __str__(self):
+        return str(self.module)+","+str(self.teacher)+","+str(self.class_type)
 
 class Faculty(models.Model):
     faculty_id = models.AutoField(primary_key=True, max_length=5)
     name = models.CharField(max_length=70)
+
+    class Meta:
+        verbose_name_plural = "Faculties"
 
     def __str__(self):
         return self.name
@@ -49,7 +48,7 @@ class Faculty_Module_Group(models.Model):
     module = models.ForeignKey("Module", on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.faculty+", "+self.module
+        return str(self.faculty)+", "+str(self.module)
 
 class Group(models.Model):
     group_id = models.CharField(primary_key=True, max_length=6)
@@ -58,36 +57,39 @@ class Group(models.Model):
     faculty=models.ForeignKey("Faculty",on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.group_id+", "+self.semester
+        return str(self.group_id)+", year"+str(self.year)
 
 class Routine(models.Model):
+    class_type_choices = (("Lecture","Lecture"),("Tutorial","Tutorial"),("Lab","Lab"))
+    day_choices = (("Sunday", "Sunday"), ("Monday", "Monday"), ("Tuesday", "Tuesday"),("Wednesday", "Wednesday"), ("Thursday", "Thursday"), ("Friday", "Friday"))
     routine_id=models.AutoField(primary_key=True)
-    startTime=models.DateTimeField(max_length=6)
-    endTime=models.DateTimeField(max_length=6)
-    day_of_the_week = models.CharField(max_length=9)
-    class_type = models.CharField(max_length=15)
+    startTime=models.TimeField()
+    endTime=models.TimeField()
+    day_of_the_week = models.CharField(max_length=10,choices=day_choices,default="")
+    class_type = models.CharField(max_length=15,choices=class_type_choices, default="")
     module = models.ForeignKey("Module",on_delete=models.CASCADE)
     teacher = models.ForeignKey("Teacher",on_delete=models.CASCADE)
+    #group = models.ForeignKey("Group",on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.routine_id
+        return str(self.module)+", "+str(self.class_type)
 
 class Group_Routine(models.Model):
     routine = models.ForeignKey("Routine", on_delete=models.CASCADE)
     group = models.ForeignKey("Group", on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.routine+", "+self.group
+        return str(self.routine)+", "+str(self.group)
 
 class Classroom(models.Model):
     classroom_id = models.AutoField(primary_key=True)
     classroom_name = models.CharField(max_length=55)
     block = models.CharField(max_length=55)
     capacity = models.IntegerField()
-    device_id = models.IntegerField()
+    #device_id = models.IntegerField()
 
     def __str__(self):
-        return self.module_id
+        return self.classroom_name
 
 class Attendance(models.Model):
     attendance_id = models.AutoField(primary_key=True, default=1)
@@ -95,67 +97,80 @@ class Attendance(models.Model):
     routine = models.ForeignKey(Routine, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.attendance_id
+        return str(self.classroom)+", "+str(self.routine)
 
-class Fingerprints(models.Model):
-    enroll_no = models.AutoField(primary_key=True)
+class Attendance_detail(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    attendance = models.ForeignKey("Attendance", on_delete=models.CASCADE)
+    enroll_no = models.ForeignKey("Student_Enrollment", null=True, blank=True, to_field="enroll_no", on_delete=models.CASCADE)
+    entry_datetime=models.DateTimeField(null=True, blank=True)
+    #status=models.CharField(max_length=2,blank=True)
+    device_id=models.ForeignKey("Device", null=True, blank=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.student)+" ,"+str(self.attendance)
+
+class Fingerprint(models.Model):
+    enroll_no = models.IntegerField()
     fingerprint = models.TextField()
     finger_number = models.IntegerField() #finger number starting from thumb finger of right hand
 
     def __str__(self):
-        return self.enroll_no
+        return str(self.enroll_no)
 
+    class Meta:
+        verbose_name_plural = "Fingerprints"
 
-class Student(models.Model):
-    student_id = models.CharField(primary_key=True, max_length=16)
-    group = models.ForeignKey("Group",on_delete=models.CASCADE);
-    student_first_name = models.CharField(max_length=50)
-    student_last_name = models.CharField(max_length=50)
-    gender = models.CharField(max_length=1)
-    email = models.EmailField(max_length=254)
-    contact = models.CharField(max_length=15)
-    current_address = models.CharField(max_length=95)
-    permanent_address = models.CharField(max_length=95)
-    photo = models.CharField(max_length=255, null=True)
-    enroll_no=models.ForeignKey("Fingerprints",on_delete=models.CASCADE)
-    qr_code=models.CharField(max_length=255)
-    nfc=models.CharField(max_length=255)
-    barcode=models.CharField(max_length=255)
+class Student_Enrollment(models.Model):
+    student = models.ForeignKey("Student",on_delete=models.CASCADE)
+    enroll_no = models.IntegerField(unique=True)
+    effective_date = models.DateField()
 
     def __str__(self):
-        return self.student_id + ", " + self.student_first_name+ ", " +self.student_last_name
+        return str(self.student)+" ,"+str(self.enroll_id)
 
-class Enrollment(models.Model):
+class Student(models.Model):
+    gender_choices = (("Male","Male"),("Female","Female"),("Other","Other"))
+    student_id = models.CharField(primary_key=True, max_length=16)
+    #group = models.ForeignKey("Group",on_delete=models.CASCADE);
+    student_first_name = models.CharField(max_length=50)
+    student_last_name = models.CharField(max_length=50)
+    gender = models.CharField(max_length=10,choices=gender_choices,blank=True)
+    email = models.EmailField(max_length=254,blank=True)
+    contact = models.CharField(max_length=15,blank=True)
+    current_address = models.CharField(max_length=95,blank=True)
+    permanent_address = models.CharField(max_length=95,blank=True)
+    #photo = models.CharField(max_length=255, null=True)
+    #enroll_no=models.ForeignKey("Fingerprints",on_delete=models.CASCADE)
+    qr_code=models.CharField(max_length=255,blank=True)
+    nfc=models.CharField(max_length=255,blank=True)
+    barcode=models.CharField(max_length=255,blank=True)
+
+    def __str__(self):
+        return str(self.student_id) + ", " + str(self.student_first_name)+ ", " +str(self.student_last_name)+ ", " +str(self.group)
+
+class Student_group(models.Model):
+    student = models.ForeignKey("Student",on_delete=models.CASCADE)
+    group = models.ForeignKey("Group",on_delete=models.CASCADE)
+    academic_year = models.CharField(max_length=50)
+
+    def __str__(self):
+        return str(self.student)+", "+str(academic_year)
+
+class Student_module(models.Model):
     student = models.ForeignKey("Student", on_delete=models.CASCADE)
     module = models.ForeignKey("Module", on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.student+", "+self.module
+        return str(self.student)+", "+str(self.module)
 
-
-class Attendance_detail(models.Model):
-    attendance_detail_id = models.BigAutoField(primary_key=True)
-    attendance = models.ForeignKey(Attendance, on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    entry_time=models.DateTimeField(max_length=6)
-    status=models.CharField(max_length=2)
-
+class Device(models.Model):
+    device_id = models.IntegerField(primary_key=True)
+    device_ip = models.CharField(max_length=100)
+    location = models.ForeignKey("Classroom", on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.attendance_detail_id
-
-class Results(models.Model):
-    result_id = models.IntegerField()
-    student=models.ForeignKey("Student",null=False,on_delete=models.CASCADE)
-    module = models.ForeignKey("Module",null=False,on_delete=models.CASCADE);
-    component_title = models.CharField(max_length=120)
-    period = models.CharField(max_length=5)
-    agreed_marks = models.IntegerField()
-    agreed_grade = models.CharField(max_length=3)
-    attempts=models.IntegerField()
-
-    def __str__(self):
-        return self.result_id
+        return str(self.device_id)+", "+str(self.location)
 
 
 
