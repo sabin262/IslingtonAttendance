@@ -61,7 +61,7 @@ class Group(models.Model):
 
 class Routine(models.Model):
     class_type_choices = (("Lecture","Lecture"),("Tutorial","Tutorial"),("Lab","Lab"))
-    day_choices = (("Sunday", "Sunday"), ("Monday", "Monday"), ("Tuesday", "Tuesday"),("Wednesday", "Wednesday"), ("Thrusday", "Thrusday"), ("Friday", "Friday"))
+    day_choices = (("Sunday", "Sunday"), ("Monday", "Monday"), ("Tuesday", "Tuesday"),("Wednesday", "Wednesday"), ("Thursday", "Thursday"), ("Friday", "Friday"))
     routine_id=models.AutoField(primary_key=True)
     startTime=models.TimeField()
     endTime=models.TimeField()
