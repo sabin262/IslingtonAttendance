@@ -10,4 +10,7 @@ def student_list(request):
 def module_list(request):
 	modules = Module.objects.all()
 	return render(request, 'Attendance/module_list.html',{'modules' : modules})
+
+def login_page(request):
+	return(request,'Attenadnce/login_page.html')
 # Create your views here.
