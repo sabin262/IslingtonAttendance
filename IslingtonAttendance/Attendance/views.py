@@ -36,7 +36,9 @@ def module_list(request,faculty):
 
 
 def group_list(request,faculty_group):
-    group=Group.objects.filter(faculty_id=faculty_group)
+    facult=Faculty_Module_Group.objects.get(module=faculty_group)
+    print("Faculty: ",facult.faculty)
+    group=Group.objects.filter(faculty_id=facult.faculty)
 
     return render(request, 'group.html', {'groups':group})
 
@@ -70,10 +72,19 @@ def authenticateUser(request):
     
     username = request.POST['username']
     password = request.POST['pass']
+    print("Credentials: ",username,"  ",password)
 
     user = authenticate(request, username=username, password=password)
     if user is not None:
-        return render(request, 'modules.html')
+       # modules = Teacher_Module.objects.prefetch_related('module').filter(faculty_id=faculty)
+        userId=User.objects.get(username=username)
+        print(userId.id)
+        teacher_id=Teacher.objects.get(username_id=userId.id)
+        print(teacher_id.teacher_id)
+        #modules = Teacher_Module.objects.filter(teacher_id=teacher_id.teacher_id)
+        modules = Teacher_Module.objects.prefetch_related('module').filter(teacher_id=teacher_id.teacher_id)
+        return render(request, 'modules.html', {'modules': modules})
+        #return render(request, 'modules.html')
         
     else:
         # Return an 'invalid login' error message.
