@@ -12,5 +12,5 @@ def module_list(request):
 	return render(request, 'Attendance/module_list.html',{'modules' : modules})
 
 def login_page(request):
-	return(request,'Attenadnce/login_page.html')
+	return render(request,'Attendance/login_page.html')
 # Create your views here.
