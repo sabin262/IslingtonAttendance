@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 # Create your models here.
 
 class Teacher(models.Model):
@@ -13,6 +16,7 @@ class Teacher(models.Model):
 
     def __str__(self):
         return self.firstname+" "+self.lastname
+
 
 class Module(models.Model):
     title = models.CharField(max_length=100, primary_key=True)
@@ -171,19 +175,4 @@ class Device(models.Model):
 
     def __str__(self):
         return str(self.device_id)+", "+str(self.location)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
